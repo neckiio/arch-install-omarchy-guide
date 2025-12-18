@@ -220,6 +220,7 @@ List available block devices and identify the target disk:
 ```sh
 lsblk
 ```
+
 Launch the partitioning tool:
 
 ```sh
@@ -270,6 +271,7 @@ Encrypt the Linux partition:
 ```sh
 cryptsetup luksFormat /dev/<linux-partition>
 ```
+
 for example (Replace **x** with the actual partition number where the **Linux system** will be installed.)
 
 ```sh
@@ -281,7 +283,7 @@ Choose a strong passphrase and remember it — it will be required at every boot
 
 It should be more than obvious that the password used to encrypt this system partition must not be random and obvious, but it also must not be forgotten.
 
-Later, the UUID of this container will be needed, which can be obtained using the command cryptsetup luksUUID /dev/nvme0n1pz or the command ls -l --time-style=+ /dev/disk/by-uuid/. Make sure to save this UUID somewhere.
+Later, the UUID of this container will be needed, which can be obtained using the command cryptsetup luksUUID /dev/nvme0n1px or the command ls -l --time-style=+ /dev/disk/by-uuid/. Make sure to save this UUID somewhere.
 
 Open the encrypted container
 
@@ -290,6 +292,7 @@ Unlock and map the encrypted partition:
 ```sh
 cryptsetup open /dev/<linux-partition> cryptroot
 ```
+
 This creates a decrypted device at:
 
 ```sh
@@ -321,6 +324,7 @@ Mount (*temporarily*) the newly created btrfs file system in \mnt:
 ```sh
 mount /dev/mapper/cryptroot /mnt
 ```
+
 And let's make some subvolumes.
 
 ```sh
@@ -342,6 +346,11 @@ Unmount the filesystem:
 
 ```sh
 umount /mnt
+```
+
+Mount the filesystem:
+
+```sh
 mount -o noatime,compress=zstd:1,subvol=@ /dev/mapper/cryptroot /mnt
 ```
 
@@ -359,6 +368,7 @@ mount -o noatime,compress=zstd:1,subvol=@var_log /dev/mapper/cryptroot /mnt/var/
 mount -o noatime,compress=zstd:1,subvol=@var_cache /dev/mapper/cryptroot /mnt/var/cache
 mount -o noatime,compress=zstd:1,subvol=@snapshots /dev/mapper/cryptroot /mnt/.snapshots
 ```
+
 ### Format and enable swap
 
 Format the swap partition:
@@ -378,6 +388,7 @@ Verify swap status:
 ```sh
 swapon --show
 ```
+
 ### mount ESP
 Create mount points
 
@@ -417,6 +428,7 @@ pacman -Syy
 ```sh
 pacstrap -K /mnt base base-devel linux linux-firmware git curl wget nano vim limine btrfs-progs efibootmgr limine cryptsetup dhcpcd iwd networkmanager reflector bash-completion avahi acpi acpi_call acpid alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber sof-firmware firewalld bluez bluez-utils cups util-linux terminus-font openssh man sudo rsync intel-ucode
 ```
+
 Note
 Replace intel-ucode with amd-ucode if you are using an AMD processor.
 This process may take a considerable amount of time depending on your internet connection (do programmer things like go get a coffee xd)
@@ -488,16 +500,19 @@ Example:
 ```sh
 es_MX.UTF-8 UTF-8
 ```
+
 Generate locales:
 
 ```sh
 locale-gen
 ```
+
 Set the system-wide locale:
 
 ```sh
-echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo "LANG=es_MX.UTF-8" > /etc/locale.conf
 ```
+
 ### Configure keyboard layout (TTY)
 
 Set the keyboard layout for the console:
@@ -511,12 +526,13 @@ Optionally, set a console font:
 ```sh
 echo "FONT=ter-132n" >> /etc/vconsole.conf
 ```
+
 ### Set hostname
 
 Set the system hostname:
 
 ```sh
-echo "archlinux" > /etc/hostname
+echo "arch" > /etc/hostname
 ``` 
 
 Configure hosts file:
@@ -524,13 +540,15 @@ Configure hosts file:
 ```sh
 nano /etc/hosts
 ```
+
 Add the following:
 
 ```sh
 127.0.0.1   localhost
 ::1         localhost
-127.0.1.1   archlinux.localdomain archlinux
+127.0.1.1   archlinux.localdomain arch
 ```
+
 ### Set root password
 
 Set up the root password
@@ -538,12 +556,14 @@ Set up the root password
 ```sh
 passwd
 ```
+
 Add a new user, add it to wheel group and set a password ( replace "name-user" with the name of your choice).
 
 ```sh
 useradd -mG wheel <name-user>
 passwd <name-user>
 ```
+
 Execute the following command and uncomment the line to let members of group wheel execute any program
 
 ```sh
@@ -648,7 +668,7 @@ Minimal configuration example:
  /Arch Linux (fallback)
      protocol: linux
      path: boot():/vmlinuz-linux
-     cmdline: cryptdevice=<device-UUID>:root root=/dev/mapper/cryptroot rw rootflags=subvol=@ rootfstype=btrfs
+     cmdline: cryptdevice=UUID=<device-UUID>:root root=/dev/mapper/cryptroot rw rootflags=subvol=@ rootfstype=btrfs
      module_path: boot():/initramfs-linux-fallback.img
 ```
 
@@ -696,6 +716,7 @@ After exiting the chroot environment, reboot the system:
 ```sh
 reboot
 ```
+
 During the first boot, the following sequence is expected:
 
 1. LUKS passphrase prompt
@@ -757,6 +778,7 @@ Optionally verify enabled services:
 ```sh
 systemctl list-unit-files --state=enabled
 ```
+
 restart the laptop
 
 ```sh
@@ -783,6 +805,7 @@ Synchronize repositories and update the system:
 ```sh
 sudo pacman -Syu
 ```
+
 Backup current mirror list
 
 Create a backup of the current mirror list:
@@ -871,6 +894,7 @@ Before making changes, create a backup of the Omarchy EFI file:
 ```sh
 cp /boot/EFI/Linux/omarchy-linux.efi /boot/EFI/Linux/omarchy-linux.efi.bak
 ```
+
 Move the EFI binary to Limine’s directory:
 
 ```sh
@@ -880,6 +904,7 @@ mv /boot/EFI/Linux/omarchy-linux.efi /boot/EFI/limine/
 Backup and edit Limine configuration
 
 Backup the existing Limine configuration file:
+
 ```sh
 mv /boot/EFI/limine/limine.conf /boot/EFI/limine/limine.conf.bak
 ```
@@ -889,6 +914,7 @@ Edit the active Limine configuration file:
 ```sh
 nano /boot/limine.conf
 ```
+
 Locate the IMAGE_PATH (or PATH) line for Omarchy and update it.
 
 Original value:
@@ -908,6 +934,7 @@ Save the file and exit the editor.
 Reboot and verify
 
 Reboot the system:
+
 ```sh
 reboot
 ```
