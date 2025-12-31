@@ -332,8 +332,10 @@ btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
 btrfs subvolume create /mnt/@var_log
 btrfs subvolume create /mnt/@var_cache
-btrfs subvolume create /mnt/@snapshots
 ```
+
+> ⚠️ There is no need to create a subvolume for snapshots; Omarchy will take care of it during installation.
+
 Verify the subvolumes:
 
 ```sh
@@ -357,7 +359,7 @@ mount -o noatime,compress=zstd:1,subvol=@ /dev/mapper/cryptroot /mnt
 Create mount points:
 
 ```sh
-mkdir -p /mnt/{home,var/log,var/cache,.snapshots}
+mkdir -p /mnt/{home,var/log,var/cache}
 ```
 
 Mount the remaining subvolumes:
@@ -366,7 +368,6 @@ Mount the remaining subvolumes:
 mount -o noatime,compress=zstd:1,subvol=@home /dev/mapper/cryptroot /mnt/home
 mount -o noatime,compress=zstd:1,subvol=@var_log /dev/mapper/cryptroot /mnt/var/log
 mount -o noatime,compress=zstd:1,subvol=@var_cache /dev/mapper/cryptroot /mnt/var/cache
-mount -o noatime,compress=zstd:1,subvol=@snapshots /dev/mapper/cryptroot /mnt/.snapshots
 ```
 
 ### Format and enable swap
@@ -426,12 +427,11 @@ pacman -Syy
 ### Install base system and essential packages
 
 ```sh
-pacstrap -K /mnt base base-devel linux linux-firmware git curl wget nano vim limine btrfs-progs efibootmgr limine cryptsetup dhcpcd iwd networkmanager reflector bash-completion avahi acpi acpi_call acpid alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber sof-firmware firewalld bluez bluez-utils cups util-linux terminus-font openssh man sudo rsync intel-ucode
+pacstrap -K /mnt base base-devel linux linux-firmware git curl perl wget nano vim limine cmake make gcc btrfs-progs efibootmgr cryptsetup iwd networkmanager reflector bash-completion avahi acpi acpi_call acpid alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber sof-firmware bluez bluez-utils cups docker util-linux terminus-font openssh sudo rsync intel-ucode
 ```
 
-Note
-Replace intel-ucode with amd-ucode if you are using an AMD processor.
-This process may take a considerable amount of time depending on your internet connection (do programmer things like go get a coffee xd)
+> ⚠️ Replace intel-ucode with amd-ucode if you are using an AMD processor.
+> ⚠️ This process may take a considerable amount of time depending on your internet connection (do programmer things like go get a coffee xd)
 
 This package set provides:
 
@@ -672,8 +672,7 @@ Minimal configuration example:
      module_path: boot():/initramfs-linux-fallback.img
 ```
 
-Note
-Remember being advised to save an UUID? Now is the time to use it. Replace the <device-UUID> above with the UUID of your LUKS container.
+> ⚠️ Remember being advised to save an UUID? Now is the time to use it. Replace the <device-UUID> above with the UUID of your LUKS container.
 For spacing in limine.conf, do not use tabs, use spaces, and respect the indentation.
 
 ### Register Limine in UEFI
@@ -753,19 +752,17 @@ This guide installs both `iwd` and `NetworkManager`. NetworkManager will be used
 Enable NetworkManager and others:
 
 ```sh
-systemctl enable NetworkManager
-systemctl enable dhcpcd
-systemctl enable iwd
-systemctl enable sshd
-systemctl enable systemd-networkd
-systemctl enable systemd-resolved
-systemctl enable systemd-timesyncd
-systemctl enable bluetooth
-systemctl enable cups
-systemctl enable avahi-daemon
-systemctl enable firewalld
-systemctl enable acpid
-systemctl enable reflector.timer
+sudo systemctl enable NetworkManager
+sudo systemctl enable iwd
+sudo systemctl enable sshd
+sudo systemctl enable systemd-networkd
+sudo systemctl enable systemd-resolved
+sudo systemctl enable systemd-timesyncd
+sudo systemctl enable bluetooth
+sudo systemctl enable cups
+sudo systemctl enable avahi-daemon
+sudo systemctl enable acpid
+sudo systemctl enable reflector.timer
 ```
 
 Enable audio services
@@ -794,6 +791,7 @@ Before installing Omarchy, the system should be fully updated and equipped with 
 Make sure the system has a working internet connection. For example (if needed):
 
 ```sh
+nmtui
 nmcli device status
 ping -c 3 archlinux.org
 ```
@@ -828,14 +826,6 @@ Refresh package databases and update again:
 sudo pacman -Syyu
 ```
 
-Install required tools
-
-Install tools needed to download and build Omarchy components:
-
-```sh
-sudo pacman -S wget curl perl git cmake make gcc
-```
-
 ## Step 15 — Install Omarchy from the console
 
 Now that the base Arch Linux system is installed, encrypted, bootable, and you have logged in for the first time, the next step is to install **Omarchy**.
@@ -859,6 +849,8 @@ You will be asked for your **name** and **email** for Git configuration (It's po
 The installer will fetch and install packages, set up configurations (including Hyprland, utilities, themes, and defaults), and adjust system settings for a polished desktop experience.
 
 The process can take **several minutes** depending on your internet speed.
+
+> ⚠️ You may need to restart the Omarchy installation more than five times.
 
 Once the installation finishes, click **Reboot now** when prompted.
 
